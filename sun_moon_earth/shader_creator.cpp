@@ -28,14 +28,14 @@ void ShaderCreator::createShadersAndLink(const std::string & vertexShaderSource,
 		glGetShaderInfoLog(vertexShaderId, 1024, nullptr, infoLog);
 		std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
 	}
-
+	success = 0;
 
 
 	int fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderId, 1, &fragmentShaderSourcePtr, nullptr);
 	glCompileShader(fragmentShaderId);
 
-	GLint success{};
+
 	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &success);
 
 	if (!success)
@@ -44,6 +44,7 @@ void ShaderCreator::createShadersAndLink(const std::string & vertexShaderSource,
 		glGetShaderInfoLog(fragmentShaderId, 1024, nullptr, infoLog);
 		std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
 	}
+	success = 0;
 
 
 	GLuint programId{ glCreateProgram() };
@@ -58,6 +59,8 @@ void ShaderCreator::createShadersAndLink(const std::string & vertexShaderSource,
 		glGetProgramInfoLog(programId, 1024, nullptr, infoLog);
 		std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
 	}
+
+	program_id_ = programId;
 
 
 	glDeleteShader(vertexShaderId);

@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="glad_src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader_creator.cpp" />
     <ClCompile Include="vertex_creator.cpp" />

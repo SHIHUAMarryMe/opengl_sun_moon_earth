@@ -17,9 +17,16 @@ public:
 
 	void createShadersAndLink(const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
 
+	inline const unsigned int& getProgramId()const noexcept
+	{
+		return program_id_;
+	}
+
 private:
 	std::string vertex_shader_source_;
 	std::string fragment_shader_source_;
+
+	unsigned int program_id_{};
 };
 
 

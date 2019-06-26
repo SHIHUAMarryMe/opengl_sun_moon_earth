@@ -5,6 +5,10 @@
 #include <cmath>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include "shader_creator.h"
 #include "vertex_creator.h"
@@ -12,24 +16,22 @@
 static constexpr const int WIDTH{ 800 };
 static constexpr const int HEIGHT{ 600 };
 
-static constexpr const char* sphereVertexShaderSource
-{
-"#version 330\n"
-"layout(location = 0) in vec3 Position;\n"
-"uniform mat4 gWVP;\n"
+static constexpr const char *vertexShaderSource{
+"#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"uniform mat4 transform;\n"
 "void main()\n"
 "{\n"
-"	gl_Position = gWVP * vec4(Position, 1.0);\n"
+"   gl_Position = transform * vec4(aPos, 1.0f);\n"
 "}"
 };
 
-static constexpr const char* sphereFragmentShaderSource
-{
-"#version 330\n"
-"out vec3 FragColor;\n"
+static constexpr const char *fragmentShaderSource{
+"#version 330 core\n"
+"out vec4 fragmentColor;\n"
 "void main()\n"
 "{\n"
-"	FragColor = vec3(1.0, 0.0, 0.0);\n"
+"   fragmentColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}"
 };
 
@@ -39,6 +41,12 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
+}
+
+static void processInput(GLFWwindow *window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 
@@ -72,14 +80,14 @@ int main()
 	}
 
 	// configure global OpenGL state.
-	glEnable(GL_DEPTH_TEST); //depth testing.
+	//glEnable(GL_DEPTH_TEST); //depth testing.
 
 
 	ShaderCreator earthShader{};
-	earthShader.createShadersAndLink(sphereVertexShaderSource, sphereFragmentShaderSource);
+	earthShader.createShadersAndLink(vertexShaderSource, fragmentShaderSource);
 
+	const std::vector<float> earthVertexesData{ VertexCreator::getSephereVertexPos(30, 30, 0.5f) };
 
-	const std::vector<float>& earth_vertexes = VertexCreator::getSephereVertexPos(19, 18, 5.0f);
 
 	GLuint earthVAO{};
 	GLuint earthVBO{};
@@ -90,7 +98,55 @@ int main()
 	glBindVertexArray(earthVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, earthVBO);
-	glBufferData(GL_ARRAY_BUFFER, earth_vertexes.size() * sizeof(float), &earth_vertexes[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, earthVertexesData.size(), earthVertexesData.data(), GL_STATIC_DRAW);
+
+	std::size_t offset{ 0 };
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(offset));
+	glEnableVertexAttribArray(0);
 
 
+	//just draw lines.
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	while (!glfwWindowShouldClose(window))
+	{
+		// input
+		// -----
+		processInput(window);
+
+		// render
+		// ------
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
+		// create transformations
+		glm::mat4 transform(1.0f); // make sure to initialize matrix to identity matrix first
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 5.0f, 1.0f));
+
+		// draw our first triangle
+		glUseProgram(earthShader.getProgramId());
+		unsigned int transformLoc = glGetUniformLocation(earthShader.getProgramId(), "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+
+
+		glBindVertexArray(earthVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+		glDrawArrays(GL_TRIANGLES, 0, earthVertexesData.size());
+		// glBindVertexArray(0); // no need to unbind it every time 
+
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteBuffers(1, &earthVAO);
+	glDeleteBuffers(1, &earthVBO);
+
+	glfwTerminate();
+
+
+	return 0;
 }
