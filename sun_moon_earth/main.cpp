@@ -23,6 +23,8 @@ static constexpr const char *vertexShaderSource{
 "void main()\n"
 "{\n"
 "   gl_Position = transform * vec4(aPos, 1.0f);\n"
+//"   gl_Position = vec4(aPos, 1.0f);\n"
+
 "}"
 };
 
@@ -86,7 +88,7 @@ int main()
 	ShaderCreator earthShader{};
 	earthShader.createShadersAndLink(vertexShaderSource, fragmentShaderSource);
 
-	const std::vector<float> earthVertexesData{ VertexCreator::getSephereVertexPos(30, 30, 0.5f) };
+	const std::vector<float> earthVertexesData{ VertexCreator::getSephereVertexPos(50, 50, 0.5f) };
 
 
 	GLuint earthVAO{};
@@ -127,7 +129,7 @@ int main()
 
 		// draw our first triangle
 		glUseProgram(earthShader.getProgramId());
-		unsigned int transformLoc = glGetUniformLocation(earthShader.getProgramId(), "transform");
+		GLint transformLoc{ glGetUniformLocation(earthShader.getProgramId(), "transform") };
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
 
