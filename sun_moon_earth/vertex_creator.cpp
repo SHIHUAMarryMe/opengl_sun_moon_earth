@@ -7,7 +7,7 @@
 #include <iterator>
 #include <iostream>
 
-static const float PI{3.14159265358979323846f};
+static const float PI{ 3.14159265358979323846f };
 
 // 球面的参数曲线可以用球坐标表示，引入参数u,v，其中v是球面点与原点的连线与z轴正向的夹角，u表示连线在xy平面的投影与x轴正向的夹角
 // meridianN: 经线数
@@ -20,22 +20,22 @@ std::vector<float> VertexCreator::produce_sephere_vertex_data(const std::size_t 
 	}
 
 	std::function<std::array<float, 3>(const float &, const float &)> posInSphere{
-		[radius](const float &u, const float &v) -> std::array<float, 3> {
+		[radius](const float &u, const float &v)->std::array<float, 3> {
 			float x{radius * std::sin(PI * v) * std::cos(2.0f * PI * u)};
 			float y{radius * std::sin(PI * v) * std::sin(2.0f * PI * u)};
 			float z{radius * std::cos(PI * v)};
 			return {x, y, z};
-		}};
+		} };
 
 	std::vector<float> vertexesData{};
 	std::back_insert_iterator<std::vector<float>> pushBackData(vertexesData);
 
-	float uSpanLength{1.0f / meridianN};
-	float vSpanLength{1.0f / lineOfLatitudeN};
+	float uSpanLength{ 1.0f / meridianN };
+	float vSpanLength{ 1.0f / lineOfLatitudeN };
 
 	// 球体最上层是由一个圆来组成的.
 	// 该圆又是由三角形组成的
-	float u{0.0f};
+	float u{ 0.0f };
 	std::array<float, 3> topCentralPos = posInSphere(.0f, .0f);
 	for (std::size_t merIndex = 0; merIndex < static_cast<std::size_t>(meridianN); ++merIndex)
 	{
@@ -58,7 +58,7 @@ std::vector<float> VertexCreator::produce_sephere_vertex_data(const std::size_t 
 
 	// 产生中间四边形组顶点数据.
 	u = .0f;
-	float v{vSpanLength};
+	float v{ vSpanLength };
 
 	std::size_t counter{};
 
@@ -71,8 +71,6 @@ std::vector<float> VertexCreator::produce_sephere_vertex_data(const std::size_t 
 
 			std::array<float, 3> bottomLeftPos = posInSphere(u, v + vSpanLength);
 			std::array<float, 3> bottomRightPos = posInSphere(u + uSpanLength, v + vSpanLength);
-
-			std::cout << "counter: " << counter++ << std::endl;
 
 			//逆时针绘制.
 			//矩形是由两个三角形组成的.
